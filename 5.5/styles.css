@@ -1,0 +1,18 @@
+body {
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    position: relative;
+  }
+  #button{
+    position: absolute;
+    left: auto;
+    right: auto;
+    top:65%;
+    width: 10vh;
+  }
