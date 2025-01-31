@@ -27,27 +27,45 @@ const ranges=[
 let boxshadow=["0 0 18px 7px #4c8bf5","0 0 18px 7px #ff8a5c","0 0 18px 7px #ffff80","0 0 18px 7px #66e066"]
 let gradients=['linear-gradient(90deg,blue,red)','linear-gradient(90deg,red,yellow)','linear-gradient(90deg,yellow,green)','linear-gradient(90deg,green)',]
 let colors=['blue','red','yellow','green']
-async function animateBars(){
-  for(let i=0;i<4;i++){
+async function resetBars(){
   for(let i=0;i<bars.length;i++){
-  await gsap.to(bars[i],{
-    width:"100%",
-    duration:0.2,
-    ease:"linear"
-  },"+=0");
-  for(let j=0;j<bars.length;j++){
-    if(j!==i){
-      gsap.to(bars[j],{ width:"0%",
-        duration:0.2,
-        ease:"linear"},"+=0");
-      }
-    }
-    await new Promise((resolve)=>setTimeout(resolve,500));
+    bars[i].style.visibility="hidden"
+}
+}
+function resetBars(){
+  for(let i=0;i<bars.length;i++){
+   gsap.to(bars[i],{
+    width:"18%",
+    duration:0.4
+   }
+   )
   }
 }
-  //alert("done")
-}
+async function animateBars() {
+  for (let k=0;k<4;k++){
+    for (let i=0;i<bars.length;i++){
+      gsap.to(bars[i],{
+        width:"200%",
+        duration:0.4,
+        ease:"sine.in"
+      },">");
+      for(let j=0;j<bars.length;j++){
+        if(j!==i){
+          gsap.to(bars[j],{
+            width:"0%",
+            duration:0.4,
+            ease:"sine.out",
+            onComplete:()=>{
+              if(i===bars.length-1&&k===3)resetBars();
+            }
+          },"<");
+        }
+      }
+      await new Promise((resolve)=>setTimeout(resolve,500));
+    }
 
+  }
+}
 async function doRecord() {
   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
   const audioContext=new AudioContext();
@@ -64,8 +82,6 @@ async function doRecord() {
       for(let j=range.start;j<range.end;j++){sum+=freq[j]};
       let avg=sum/(range.end-range.start);
     let val=avg/255;
-      //let val=Math.log10(1+avg)/Math.log10(255);
-      //arrval[i]=arrval[i]*0.8+val*0.2;
     arrval[i]=val;
     })
     let ts=0;
@@ -82,7 +98,6 @@ async function doRecord() {
         ease:"sine.inout"},"+=0")
       }
     }
-    rotate(ranges);
   },200)
   const mediaRecorder=new MediaRecorder(stream);
   let audioChunks=[];
@@ -100,8 +115,8 @@ async function doRecord() {
   },5000)
   
 }
-button.addEventListener('click',()=>{
-  timeline.clear();
+button.addEventListener('click',async ()=>{
+  timeline.progress(0).clear();
   text.innerHTML='';
   if (isOpen) {
     timeline.to(drawer,{height:0,duration:0.125,ease:"sine.inout"});
@@ -111,7 +126,7 @@ button.addEventListener('click',()=>{
     bars[i].style.background = colors[i];
     bars[i].style.boxShadow = "none";}
   } else {
-    doRecord();
+    await doRecord();
     for(let i=0;i<bars.length;i++){
     bars[i].style.visibility='visible'
     bars[i].style.boxShadow=boxshadow[i];
@@ -123,6 +138,10 @@ button.addEventListener('click',()=>{
     speechRecognizer.interimResults=true;
     speechRecognizer.lang='en-US';
     speechRecognizer.start();
+    speechRecognizer.onend=async()=>
+      {
+        await animateBars();
+      }
     navigator.mediaDevices.getUserMedia({audio:true}).then((stream)=>{
 
     }) 
@@ -135,32 +154,7 @@ button.addEventListener('click',()=>{
         bars[i].style.visibility='visible'
     }
     setTimeout(async ()=>{
-     // alert("hi");
-        speechRecognizer.stop();
-        console.log("stop");
-        await animateBars()
-        //const timeline2=gsap.timeline({repeat:3,repeatDelay:0.05});
-  //       for(let i=0;i<4;i++){
-  //       for(let i=0;i<bars.length;i++){
-  //         for(let j=0;j<bars.length;j++){
-  //       gsap.to(bars[i],{
-  //         width:"100%",
-  //         duration:0.2,
-  //         ease:"linear"
-  //       },"+=0.05")
-  //       if(j!=i){
-  //         gsap.to(bars[j],{
-  //           width:"0%",
-  //           duration:0.2,
-  //           ease:"linear"
-  //         },"-=0.2")
-
-  //       }
-  //     }
-  //   }
-  //   //   //timeline2.play();
-  //   //   }
-  // }  
+        await speechRecognizer.stop();
     }, 5000)
 
   }
